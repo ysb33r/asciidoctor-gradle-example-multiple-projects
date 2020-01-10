@@ -1,4 +1,5 @@
 import org.kordamp.gradle.livereload.LiveReloadTask
+import org.asciidoctor.gradle.jvm.AsciidoctorTask
 
 buildscript {
     repositories {
@@ -101,5 +102,24 @@ subprojects {
     task liveReload(type: LiveReloadTask) {
         docRoot "${projectDir}/build"
     }
+
+    // The following definition throws an exception:
+    //
+    // A problem occurred evaluating root project 'training'.
+    //> Could not create task ':administration:generateHTML'.
+    //  > Could not create task of type 'AsciidoctorTask'.
+    //    > Could not create an instance of type org.asciidoctor.gradle.jvm.AsciidoctorJExtension.
+    //      > Extension with name 'asciidoctorj' does not exist. Currently registered extension names: [ext]
+    //
+    /*
+    task generateHTML(type: AsciidoctorTask) {
+        asciidoctorj {
+            options template_dirs: ["${rootProject.projectDir}/resources/templates"]
+        }
+        baseDir file("${projectDir}/docs")
+        sourceDir file("${projectDir}/docs")
+        outputDir file("${projectDir}/build/html")
+    }
+    */
 }
 
