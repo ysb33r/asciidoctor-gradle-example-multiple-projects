@@ -17,6 +17,8 @@ plugins {
     id 'org.asciidoctor.jvm.revealjs' version '3.0.0-alpha.4'
     id 'org.asciidoctor.jvm.gems' version '3.0.0-alpha.4'
 }
+subprojects {
+
 apply plugin: 'org.kordamp.gradle.livereload'
 
 repositories {
@@ -119,7 +121,8 @@ subprojects {
         baseDir file("${projectDir}/docs")
         sourceDir file("${projectDir}/docs")
         outputDir file("${projectDir}/build/html")
+        }
+        */
     }
-    */
-}
 
+}
