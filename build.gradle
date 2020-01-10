@@ -1,0 +1,105 @@
+import org.kordamp.gradle.livereload.LiveReloadTask
+
+buildscript {
+    repositories {
+        jcenter()
+    }
+
+    dependencies {
+        classpath 'org.kordamp.gradle:livereload-gradle-plugin:0.2.1'
+    }
+}
+
+plugins {
+    id 'org.asciidoctor.jvm.convert' version '3.0.0-alpha.4'
+    id 'org.asciidoctor.jvm.pdf' version '3.0.0-alpha.4'
+    id 'org.asciidoctor.jvm.revealjs' version '3.0.0-alpha.4'
+    id 'org.asciidoctor.jvm.gems' version '3.0.0-alpha.4'
+}
+apply plugin: 'org.kordamp.gradle.livereload'
+
+repositories {
+    mavenCentral()
+    jcenter()
+    ruby {
+        gems()
+    }
+}
+
+dependencies {
+    asciidoctorGems 'rubygems:rouge:3.13.0'
+}
+
+subprojects {
+    asciidoctorj {
+        requires 'rouge'
+        attributes 'allow-uri-read': '',
+                'source-highlighter': 'rouge'
+    }
+
+    revealjs {
+        version = '3.0.0'
+        templateGitHub {
+            organisation = 'hakimel'
+            repository = 'reveal.js'
+            tag = '3.7.0'
+        }
+    }
+
+    asciidoctor {
+        dependsOn asciidoctorGemsPrepare
+
+        asciidoctorj {
+            options template_dirs: ["${rootProject.projectDir}/resources/templates"]
+        }
+        baseDir file("${projectDir}/docs")
+        sourceDir file("${projectDir}/docs")
+        outputDir file("${projectDir}/build/online")
+    }
+
+    asciidoctorPdf {
+        dependsOn asciidoctorGemsPrepare
+
+        baseDir file("${projectDir}/docs")
+        sourceDir file("${projectDir}/docs")
+        outputDir file("${projectDir}/build/online")
+    }
+
+    asciidoctorRevealJs {
+        revealjsOptions {
+            controls = false
+            progressBar = true
+            pushToHistory = true
+            overviewMode = true
+            touchMode = true
+            theme = 'white'
+        }
+
+        asciidoctorj {
+            attributes 'imagesdir': 'images',
+                    'revealjs_center': 'false',
+                    'revealjs_width': '1280',
+                    'revealjs_height': '720',
+                    'revealjs_margin': '0.1',
+                    'revealjs_fragmentinurl': 'true',
+                    'revealjs_slidenumber': 'c',
+                    'revealjs_minscale': '0.2',
+                    'revealjs_maxscale': '2'
+        }
+        baseDirFollowsSourceDir()
+        sourceDir file("${projectDir}/docs")
+        outputDir file("${projectDir}/build/slides")
+
+        resources {
+            from("${projectDir}/images") {
+                include '**'
+                into 'images'
+            }
+        }
+    }
+
+    task liveReload(type: LiveReloadTask) {
+        docRoot "${projectDir}/build"
+    }
+}
+

@@ -1,0 +1,74 @@
+= Training documentation
+
+== What I want
+
+- `./gradlew asciidoctor` task should convert the AsciiDoc documents on each submodule (currently it only converts _introduction_ module)
+- A shared configuration, all the modules should use the same processor (not necessarily the same instance)
+- Parallel execution between modules
+** It should be safe to run the task in parallel on all modules
+
+Please note that the `liveReload` task is working as expected.
+The only thing is that I don't want a `liveReload` task on the root project.
+
+So, ideally the following command should throw `Task 'liveReload' not found in root project 'training'.`.
+
+ $ ./gradlew :liveReload
+
+Currently, the task is trying to run but fails (because there's no `build` directory).
+
+```
+> Task :liveReload FAILED
+Enabling LiveReload at port 35729 for build/livereload
+Caught unexpected exception: java.nio.file.NoSuchFileException: build/livereload
+```
+
+But that's not a big deal :)
+
+== What I've tried
+
+Using a `task`:
+
+```gradle
+task generateHTML (type: AsciidoctorTask) {
+  asciidoctorj {
+    options template_dirs: ["${rootProject.projectDir}/resources/templates"]
+  }
+  baseDir file("${projectDir}/docs")
+  sourceDir file("${projectDir}/docs")
+  outputDir file("${projectDir}/build/html")
+}
+```
+
+but it throws:
+
+```
+> Could not create task of type 'AsciidoctorTask'.
+  > Could not create an instance of type org.asciidoctor.gradle.jvm.AsciidoctorJExtension.
+    > Extension with name 'asciidoctorj' does not exist. Currently registered extension names: [ext]
+```
+
+I've also tried some shenanigans with `task` and `dependsOn` but it's not working.
+
+== Current workaround
+
+As a workaround, I've basically copied/pasted the `build.gradle` file in each submodule.
+To avoid code duplication (ie. share the configuration), I've declared the following in the root project:
+
+.build.gradle
+```gradle
+subprojects {
+  ext.asciidoctorjConfigClosure = { ext ->
+    ext.requires 'rouge'
+    ext.attributes 'allow-uri-read': '',
+                   'source-highlighter': 'rouge'
+  }
+}
+```
+
+.modules/administration/build.gradle
+```gradle
+asciidoctorj(asciidoctorjConfigClosure)
+```
+
+I'm pretty sure that's not how it should be done!
+On top of that, the `asciidoctorGemsPrepare` task will be executed on each submodule, which is not optimal.

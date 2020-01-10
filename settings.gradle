@@ -1,0 +1,10 @@
+rootProject.name = 'training'
+
+include 'demo'
+project(':demo').projectDir = file('modules/demo')
+
+include 'introduction'
+project(':introduction').projectDir = file('modules/introduction')
+
+include 'administration'
+project(':administration').projectDir = file('modules/administration')
